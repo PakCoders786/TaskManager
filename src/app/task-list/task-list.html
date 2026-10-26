@@ -1,11 +1,4 @@
 <main class="dashboard">
-  <header class="topbar">
-    <a class="brand" href="/" aria-label="Daylist home">
-      <span class="brand__icon"><i class="ri-check-line" aria-hidden="true"></i></span>
-      <span class="brand__wordmark">day<span>list</span></span>
-    </a>
-  </header>
-
   <section class="workspace" aria-labelledby="dashboard-title">
     <header class="task-list__header">
       <div class="task-list__intro">
@@ -42,13 +35,20 @@
           formControlName="title"
           placeholder="What would you like to get done?"
           autocomplete="off"
-          aria-describedby="title-error"
+          aria-describedby="title-error grammar-note"
+          [disabled]="checkingGrammar()"
+          (input)="clearGrammarFeedback()"
         />
-        <button class="add-button" type="submit" [disabled]="form.invalid">
-          Add task
+        <button class="add-button" type="submit" [disabled]="form.invalid || checkingGrammar()">
+          {{ checkingGrammar() ? 'Checking grammar…' : 'Add task' }}
           <i class="ri-arrow-right-line add-button__arrow" aria-hidden="true"></i>
         </button>
       </div>
+      <p class="validation-note" id="grammar-note">
+        When you add a task, its title is sent to
+        <a href="https://languagetool.org" target="_blank" rel="noopener">LanguageTool</a>
+        for English spelling and grammar checks.
+      </p>
 
       @if (
         form.controls.title.touched &&
@@ -70,6 +70,17 @@
       ) {
         <p class="validation-message" id="title-error">
           Enter at least two words, like “Call Alex”.
+        </p>
+      } @else if (grammarIssue()) {
+        <p class="validation-message" id="title-error">
+          {{ grammarIssue()?.message }}
+          @if (grammarIssue()?.replacements?.[0]?.value) {
+            Suggested: {{ grammarIssue()?.replacements?.[0]?.value }}
+          }
+        </p>
+      } @else if (grammarCheckUnavailable()) {
+        <p class="validation-message" id="title-error">
+          Grammar checking is unavailable. Please try again.
         </p>
       }
     </form>

@@ -8,6 +8,8 @@ import {
   ValidatorFn,
   Validators,
 } from '@angular/forms';
+import { finalize } from 'rxjs';
+import { LanguageToolMatch, TaskTitleValidator } from '../task-title-validator';
 import { TaskService } from '../task.service';
 
 type TaskFilter = 'all' | 'active' | 'completed';
@@ -31,7 +33,11 @@ const sentenceLikeValidator: ValidatorFn = (
 })
 export class TaskListComponent {
   private readonly taskService = inject(TaskService);
+  private readonly taskTitleValidator = inject(TaskTitleValidator);
 
+  readonly checkingGrammar = signal(false);
+  readonly grammarIssue = signal<LanguageToolMatch | null>(null);
+  readonly grammarCheckUnavailable = signal(false);
   readonly tasks = this.taskService.tasks;
   readonly filter = signal<TaskFilter>('all');
   readonly taskCounts = computed(() => {
@@ -76,12 +82,35 @@ export class TaskListComponent {
   }
 
   addTask(): void {
-    if (this.form.invalid) {
+    if (this.form.invalid || this.checkingGrammar()) {
       return;
     }
 
-    this.taskService.add(this.form.controls.title.value);
-    this.form.reset();
+    this.grammarIssue.set(null);
+    this.grammarCheckUnavailable.set(false);
+    this.checkingGrammar.set(true);
+
+    const title = this.form.controls.title.value.trim();
+    this.taskTitleValidator
+      .check(title)
+      .pipe(finalize(() => this.checkingGrammar.set(false)))
+      .subscribe({
+        next: (issue) => {
+          if (issue) {
+            this.grammarIssue.set(issue);
+            return;
+          }
+
+          this.taskService.add(title);
+          this.form.reset();
+        },
+        error: () => this.grammarCheckUnavailable.set(true),
+      });
+  }
+
+  clearGrammarFeedback(): void {
+    this.grammarIssue.set(null);
+    this.grammarCheckUnavailable.set(false);
   }
 
   toggleTask(id: number): void {
