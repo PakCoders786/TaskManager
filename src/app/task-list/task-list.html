@@ -1,30 +1,24 @@
 <main class="dashboard">
-  <!-- Subtle dark grid noise overlay -->
-  <div class="dashboard__noise" aria-hidden="true"></div>
-
-  <!-- Header / System Bar -->
   <header class="topbar">
-    <div class="brand" aria-label="Apex task control">
-      <span class="brand__caption">TASK Manager</span>
-    </div>
-
+    <a class="brand" href="/" aria-label="Daylist home">
+      <span class="brand__icon"><i class="ri-check-line" aria-hidden="true"></i></span>
+      <span class="brand__wordmark">day<span>list</span></span>
+    </a>
   </header>
 
-
-    <!-- Intro Banner & Progress Radial Gauge -->
+  <section class="workspace" aria-labelledby="dashboard-title">
     <header class="task-list__header">
       <div class="task-list__intro">
-        <p class="eyebrow"><i class="ri-flashlight-line" aria-hidden="true"></i> YOUR NEXT MOVE STARTS HERE</p>
-        <h1 id="dashboard-title">MAKE EVERY<br /><span>SECOND</span> COUNT<span class="title-stop">.</span></h1>
+        <p class="eyebrow">A CALMER WAY TO GET THINGS DONE</p>
+        <h1 id="dashboard-title">Make room for<br /><span>what matters.</span></h1>
         <p class="task-count">
           @if (remaining() === 0) {
-            All clear. Take a breath before the next lap.
+            You’re all caught up. Enjoy the breathing room.
           } @else {
-            {{ remaining() }} {{ remaining() === 1 ? 'task' : 'tasks' }} left to cross the finish line.
+            {{ remaining() }} {{ remaining() === 1 ? 'task' : 'tasks' }} left on your list.
           }
         </p>
       </div>
-
       <div
         class="progress-gauge"
         [style.--progress]="(taskCounts().all === 0 ? 0 : (taskCounts().completed / taskCounts().all) * 100) + '%'"
@@ -32,55 +26,30 @@
         [attr.aria-label]="taskCounts().completed + ' of ' + taskCounts().all + ' tasks completed'"
       >
         <div class="progress-gauge__inner">
-          <i class="ri-speed-up-line" aria-hidden="true"></i>
           <strong>{{ taskCounts().all === 0 ? '—' : taskCounts().completed }}</strong>
           <span>COMPLETED</span>
         </div>
       </div>
     </header>
 
-    <!-- Telemetry Stats Panel -->
-    <div class="telemetry">
-      <div class="telemetry__item">
-        <i class="ri-list-check-3" aria-hidden="true"></i>
-        <span class="telemetry__label">TOTAL TASKS</span>
-        <strong>{{ taskCounts().all.toString().padStart(2, '0') }}</strong>
-      </div>
-      <div class="telemetry__divider"></div>
-      <div class="telemetry__item">
-        <i class="ri-focus-2-line" aria-hidden="true"></i>
-        <span class="telemetry__label">IN PROGRESS</span>
-        <strong>{{ taskCounts().active.toString().padStart(2, '0') }}</strong>
-      </div>
-      <div class="telemetry__divider"></div>
-      <div class="telemetry__item">
-        <i class="ri-checkbox-circle-line" aria-hidden="true"></i>
-        <span class="telemetry__label">FINISHED</span>
-        <strong>{{ taskCounts().completed.toString().padStart(2, '0') }}</strong>
-      </div>
-    </div>
-
-    <!-- Task Input Form -->
     <form class="task-form" [formGroup]="form" (ngSubmit)="addTask()">
-      <label for="task-title"><span class="form-index">01 /</span> ADD TO THE RUN</label>
+      <label for="task-title">Add a task</label>
       <div class="task-form__controls">
-        <i class="ri-arrow-right-s-line input-icon" aria-hidden="true"></i>
+        <i class="ri-add-line input-icon" aria-hidden="true"></i>
         <input
           id="task-title"
           type="text"
           formControlName="title"
-          placeholder="Enter your next objective..."
+          placeholder="What would you like to get done?"
           autocomplete="off"
           aria-describedby="title-error"
         />
         <button class="add-button" type="submit" [disabled]="form.invalid">
-          <i class="ri-add-line" aria-hidden="true"></i>
-          ADD TASK
-          <i class="ri-arrow-right-up-line add-button__arrow" aria-hidden="true"></i>
+          Add task
+          <i class="ri-arrow-right-line add-button__arrow" aria-hidden="true"></i>
         </button>
       </div>
 
-      <!-- Validation Error Feedback -->
       @if (
         form.controls.title.touched &&
         form.controls.title.hasError('required')
@@ -95,14 +64,20 @@
         <p class="validation-message" id="title-error">
           The title must be at least 3 characters long.
         </p>
+      } @else if (
+        form.controls.title.touched &&
+        form.controls.title.hasError('sentenceLike')
+      ) {
+        <p class="validation-message" id="title-error">
+          Enter at least two words, like “Call Alex”.
+        </p>
       }
     </form>
 
-    <!-- Filters Header -->
     <div class="list-heading">
       <div>
-        <span class="list-heading__overline">LIVE TRACKER</span>
-        <h2>YOUR TASKS<span>.</span></h2>
+        <span class="list-heading__overline">YOUR WORKSPACE</span>
+        <h2>Your tasks</h2>
       </div>
       <nav class="task-filters" aria-label="Filter tasks">
         <button
@@ -111,7 +86,7 @@
           [attr.aria-pressed]="filter() === 'all'"
           (click)="setFilter('all')"
         >
-          ALL <span>{{ taskCounts().all }}</span>
+          All <span>{{ taskCounts().all }}</span>
         </button>
         <button
           type="button"
@@ -119,7 +94,7 @@
           [attr.aria-pressed]="filter() === 'active'"
           (click)="setFilter('active')"
         >
-          ACTIVE <span>{{ taskCounts().active }}</span>
+          Active <span>{{ taskCounts().active }}</span>
         </button>
         <button
           type="button"
@@ -127,12 +102,11 @@
           [attr.aria-pressed]="filter() === 'completed'"
           (click)="setFilter('completed')"
         >
-          DONE <span>{{ taskCounts().completed }}</span>
+          Completed <span>{{ taskCounts().completed }}</span>
         </button>
       </nav>
     </div>
 
-    <!-- Dynamic Tasks List -->
     <ul class="tasks">
       @for (task of visibleTasks(); track task.id; let index = $index) {
         <li class="task" [class.done]="task.done">
@@ -147,7 +121,7 @@
             <span class="task__check"><i class="ri-check-line" aria-hidden="true"></i></span>
             <span>{{ task.title }}</span>
           </label>
-          <span class="task__tag">{{ task.done ? 'COMPLETE' : 'ON DECK' }}</span>
+          <span class="task__tag">{{ task.done ? 'Completed' : 'In progress' }}</span>
           <button
             class="task__delete"
             type="button"
@@ -160,32 +134,24 @@
         </li>
       } @empty {
         <li class="empty-state">
-          <i class="ri-flag-2-line" aria-hidden="true"></i>
+          <i class="ri-inbox-2-line" aria-hidden="true"></i>
           @if (tasks().length === 0) {
-            <strong>THE GRID IS CLEAR.</strong>
-            <span>Add your first objective and get moving.</span>
+            <strong>Your list is ready for a fresh start.</strong>
+            <span>Add a task above and it’ll show up here.</span>
           } @else if (filter() === 'active') {
-            <strong>PERFECT LAP.</strong>
-            <span>Every task is complete. You’re clear to coast.</span>
+            <strong>Nothing left to do.</strong>
+            <span>You’ve completed every task on your list.</span>
           } @else {
-            <strong>NO FINISHES YET.</strong>
-            <span>Completed tasks will show here.</span>
+            <strong>No completed tasks yet.</strong>
+            <span>Tasks you finish will be collected here.</span>
           }
         </li>
       }
     </ul>
 
-    <!-- Footer Bar -->
     <footer class="task-list__footer">
-      <span><span class="footer-light"></span> ALL SYSTEMS OPERATIONAL</span>
-      <span>STAY SHARP <i class="ri-arrow-right-line" aria-hidden="true"></i></span>
+      <span><span class="footer-light"></span> A LITTLE PROGRESS ADDS UP</span>
+      <span>{{ remaining() }} {{ remaining() === 1 ? 'task' : 'tasks' }} remaining</span>
     </footer>
-  
-
-  <!-- Track Mark Footer Accent -->
-  <div class="track-mark" aria-hidden="true">
-    <span>APEX / 001</span>
-    <span class="track-mark__line"></span>
-    <i class="ri-steering-2-line"></i>
-  </div>
+  </section>
 </main>

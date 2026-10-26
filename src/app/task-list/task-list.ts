@@ -1,8 +1,26 @@
 import { Component, computed, inject, signal } from '@angular/core';
-import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  AbstractControl,
+  FormControl,
+  FormGroup,
+  ReactiveFormsModule,
+  ValidationErrors,
+  ValidatorFn,
+  Validators,
+} from '@angular/forms';
 import { TaskService } from '../task.service';
 
 type TaskFilter = 'all' | 'active' | 'completed';
+
+const sentenceLikeValidator: ValidatorFn = (
+  control: AbstractControl,
+): ValidationErrors | null => {
+  const words = String(control.value ?? '').match(
+    /\p{L}[\p{L}\p{M}]*(?:['’-]\p{L}[\p{L}\p{M}]*)*/gu,
+  );
+
+  return words && words.length >= 2 ? null : { sentenceLike: true };
+};
 
 @Component({
   selector: 'app-task-list',
@@ -45,7 +63,11 @@ export class TaskListComponent {
   readonly form = new FormGroup({
     title: new FormControl('', {
       nonNullable: true,
-      validators: [Validators.required, Validators.minLength(3)],
+      validators: [
+        Validators.required,
+        Validators.minLength(3),
+        sentenceLikeValidator,
+      ],
     }),
   });
 
