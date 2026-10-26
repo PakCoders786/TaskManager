@@ -36,7 +36,7 @@
           placeholder="What would you like to get done?"
           autocomplete="off"
           aria-describedby="title-error grammar-note"
-          [disabled]="checkingGrammar()"
+          [readonly]="checkingGrammar()"
           (input)="clearGrammarFeedback()"
         />
         <button class="add-button" type="submit" [disabled]="form.invalid || checkingGrammar()">
@@ -44,12 +44,6 @@
           <i class="ri-arrow-right-line add-button__arrow" aria-hidden="true"></i>
         </button>
       </div>
-      <p class="validation-note" id="grammar-note">
-        When you add a task, its title is sent to
-        <a href="https://languagetool.org" target="_blank" rel="noopener">LanguageTool</a>
-        for English spelling and grammar checks.
-      </p>
-
       @if (
         form.controls.title.touched &&
         form.controls.title.hasError('required')

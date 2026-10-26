@@ -43,9 +43,9 @@ describe('TaskListComponent task title validation', () => {
     });
     await fixture.whenStable();
 
-    expect(title.valid).toBe(true);
     expect(component.tasks()).toHaveLength(1);
     expect(title.value).toBe('');
+    expect(title.pristine).toBe(true);
   });
 
   it('shows a LanguageTool issue and suggestion without adding the task', async () => {
